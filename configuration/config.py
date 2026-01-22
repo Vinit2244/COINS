@@ -33,7 +33,8 @@ render_folder = project_folder / 'render'
 render_folder.mkdir(parents=True, exist_ok=True)
 
 # scene names
-scene_names = ["scene0", "scene1", "scene2"]
+scene_names = []
+test_scenes = ["scene0", "scene1", "scene2"]
 
 # sequence names
 recordings_temporal = project_folder / 'configuration' / 'recordings_temporal.txt'
