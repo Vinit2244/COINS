@@ -12,7 +12,7 @@ import trimesh
 
 def scene_registration(scene_name):
     PROX_scene = trimesh.load_mesh(Path.joinpath(scene_folder, scene_name + '.ply'))
-    POSA_scene = trimesh.load_mesh(Path.joinpath(proxe_base_folder, 'POSA_dir/scenes', scene_name + '.ply'))
+    POSA_scene = trimesh.load_mesh(Path.joinpath(scene_folder, scene_name + '.ply'))
     transform, cost = trimesh.registration.mesh_other(POSA_scene, PROX_scene)
     # (PROX_scene + POSA_scene.apply_transform(transform)).show()
     return transform

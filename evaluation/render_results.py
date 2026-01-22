@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append('..')
 from configuration.config import *
-os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+# os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
 
 import smplx
 import trimesh

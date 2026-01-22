@@ -1,5 +1,5 @@
 import os
-os.environ['PYOPENGL_PLATFORM'] = "osmesa"
+# os.environ['PYOPENGL_PLATFORM'] = "osmesa"
 
 import numpy as np
 import pytorch3d.transforms.rotation_conversions
@@ -115,7 +115,9 @@ def two_stage_sample(method='direct'):
                     combination_name = []
                     for atomic_idx, instance in enumerate(combination):
                         combination_name.append(verbs[atomic_idx] + '-' + nouns[atomic_idx] + '-' + str(instance.id))
-                        obj_mesh = scene.get_mesh_with_accessory(instance.id)
+                        print(instance.id, "is the id of the instance (from two_stage_sample.py)")
+                        node_idx = scene.get_node_id_by_instance_id(instance.id)
+                        obj_mesh = scene.get_mesh_with_accessory(node_idx)
                         obj_meshes.append(obj_mesh)
                     combination_name = '+'.join(combination_name)
                     # scene_mesh = trimesh.util.concatenate(obj_meshes)
@@ -273,7 +275,8 @@ def two_stage_composition_sample(method='direct', mask_type='learned_by_part'):
                     combination_name = []
                     for atomic_idx, instance in enumerate(combination):
                         combination_name.append(verbs[atomic_idx] + '-' + nouns[atomic_idx] + '-' + str(instance.id))
-                        obj_mesh = scenes[scene_name].get_mesh_with_accessory(instance.id)
+                        node_idx = scenes[scene_name].get_node_id_by_instance_id(instance.id)
+                        obj_mesh = scenes[scene_name].get_mesh_with_accessory(node_idx)
                         obj_meshes.append(obj_mesh)
                     combination_name = '+'.join(combination_name)
                     print(combination_name)

@@ -161,6 +161,7 @@ class Scene:
         Load the scene specified by name. The scene contains a mesh and a list of object instances.
         The object instances are loaded from cache for acceleration if exist or built from segmentation labels.
         """
+        self.name = scene_name
         scene_cache_path = os.path.join(scene_cache_folder, scene_name + '.pkl')
         # load from scene cache file if exist for acceleration
         if os.path.exists(scene_cache_path):
@@ -181,29 +182,18 @@ class Scene:
         else:
             print('create scene:', scene_name)
             self.object_nodes = []
-            self.name = scene_name
-            # cam to world transform
-            cam2world_path = os.path.join(cam2world_folder, scene_name + ".json")
-            with open(cam2world_path, 'r') as f:
-                self.cam2world = np.array(json.load(f))
             # scene mesh and semantic mesh
             scene_path = os.path.join(scene_folder, scene_name + '.ply')
-            # semantic annotation of Werkraum is inconsistent with RGB scan
-            scene_semantic_path = os.path.join(scene_folder, scene_name + '_withlabels.ply')
             # load with trimesh errors for werkraum
             self.mesh = o3d.io.read_triangle_mesh(scene_path)
             original_mesh = to_trimesh(self.mesh)
-            semantic_mesh = to_trimesh(o3d.io.read_triangle_mesh(scene_semantic_path))
-            segment_mesh = semantic_mesh if scene_name in ['Werkraum',
-                                                           'MPH1Library'] else original_mesh  # semantic annotation of the two is inconsistent with RGB scan, we can only split the semantic mesh
-
             # load or build instance segmentation
-            instance_segment_path = os.path.join(scene_folder, self.name + '_segment.json')
+            instance_segment_path = os.path.join(scene_cache_folder, self.name + '_segment.json')
             with open(instance_segment_path, 'r') as f:
                 segment_labels = json.load(f)
             vertex_category_ids, vertex_instance_ids = np.array(segment_labels['vertex_category']), np.array(
                 segment_labels['vertex_instance'])
-            self.get_object_nodes(vertex_category_ids, vertex_instance_ids, segment_mesh)
+            self.get_object_nodes(vertex_category_ids, vertex_instance_ids, original_mesh)
 
             # save scene cache
             with open(scene_cache_path, 'wb') as f:
@@ -352,6 +342,15 @@ class Scene:
                                                       ))
                 idx += 1
 
+    def get_node_id_by_instance_id(self, instance_id):
+        """
+        Get the object node index using instance id.
+        """
+        for node_idx, obj_node in enumerate(self.object_nodes):
+            if obj_node.id == instance_id:
+                return node_idx
+        return None
+
     def get_mesh_with_accessory(self, node_idx):
         """
         return complete meshes for single instances of sofa, bed, table by adding back accessory objects like cushion and objects
@@ -397,24 +396,17 @@ class Scene:
         atomic_interactions = interaction.split('+')
         verbs = [atomic.split('-')[0] for atomic in atomic_interactions]
         nouns = [atomic.split('-')[1] for atomic in atomic_interactions]
-        if use_annotation and self.name in candidate_combination_dict and '+'.join(nouns) in candidate_combination_dict[self.name]:
-            # print('use annotation')
-            candidate_combination = candidate_combination_dict[self.name]['+'.join(nouns)]
-            candidate_combination = [[self.object_nodes[obj_idx] for obj_idx in obj_combination] for obj_combination in candidate_combination]
-            return verbs, nouns, candidate_combination
-        else:
-            # print('automic filtering', interaction)
-            candidate_combination = None
-            for noun in nouns:
-                candidate_instances = [node for node in self.object_nodes if node.category_name == noun]
-                if candidate_combination is None:
-                    candidate_combination = [[instance] for instance in candidate_instances]
-                else:
-                    updated_combination = []
-                    for combination in candidate_combination:
-                        for instance in candidate_instances:
-                            updated_combination.append(combination + [instance])
-                    candidate_combination = updated_combination
+        candidate_combination = None
+        for noun in nouns:
+            candidate_instances = [node for node in self.object_nodes if node.category_name == noun]
+            if candidate_combination is None:
+                candidate_combination = [[instance] for instance in candidate_instances]
+            else:
+                updated_combination = []
+                for combination in candidate_combination:
+                    for instance in candidate_instances:
+                        updated_combination.append(combination + [instance])
+                candidate_combination = updated_combination
         return verbs, nouns, candidate_combination
 
     def translation_sample_for_interaction(self, interaction, object_combination,
@@ -504,7 +496,3 @@ if __name__ == "__main__":
         scene.save(semantic=True)
         scene.save(semantic=False)
         print('floor height:', scene.get_floor_height())
-
-
-
-

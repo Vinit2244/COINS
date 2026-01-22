@@ -4,8 +4,8 @@ sys.path.append('..')
 sys.path.append('../POSA')
 
 from configuration.config import *
-if not local_machine:
-    os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+# if not local_machine:
+#     os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
 
 import smplx
 import trimesh
