@@ -494,11 +494,5 @@ if __name__ == '__main__':
     if args.composition:
         two_stage_composition_sample(method='optim', mask_type='learned_by_part')
     else:
-        two_stage_sample(method='optimization_after_get_body')
+        # two_stage_sample(method='optimization_after_get_body')
         two_stage_sample(method='direct')
-
-
-
-
-
-
