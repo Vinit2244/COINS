@@ -75,7 +75,7 @@ scannet_benchmark_labels = [
     'void',             # 21
     'void',             # 22
     'void',             # 23
-    'refrigerator',     # 24
+    'refridgerator',    # 24
     'void',             # 25
     'void',             # 26
     'void',             # 27
